@@ -1,19 +1,39 @@
 import { dbank_backend } from "../../declarations/dbank_backend";
 
-document.querySelector("form").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const button = e.target.querySelector("button");
+// we want to add event listener on current balance value change
+window.addEventListener("load", async () => {
+	// update balance from dbank_backend.check_balance
+	const currentAmount = await dbank_backend.checkBalance();
+	document.getElementById("value").innerText =
+		Math.round(currentAmount * 100) / 100;
+});
 
-  const name = document.getElementById("name").value.toString();
+// add event listener on the form element
+document.querySelector("form").addEventListener("submit", async (event) => {
+	event.preventDefault();
 
-  button.setAttribute("disabled", true);
+	// handling button click
+	const button = document.querySelector("#submit-btn");
 
-  // Interact with foo actor, calling the greet method
-  const greeting = await dbank_backend.greet(name);
+	const inputAmount = parseFloat(
+		document.getElementById("input-amount").value
+	);
+	const oututAmount = parseFloat(
+		document.getElementById("withdrawal-amount").value
+	);
 
-  button.removeAttribute("disabled");
+	// disable button
+	button.setAttribute("disabled", true);
+	// function calls
+  await dbank_backend.topUp(inputAmount);
+  await dbank_backend.withdraw(oututAmount);
+	// update the balance
+	const currentAmount = await dbank_backend.checkBalance();
+	document.getElementById("value").innerText =
+		Math.round(currentAmount * 100) / 100;
 
-  document.getElementById("greeting").innerText = greeting;
-
-  return false;
+	// reset input field to 0
+	document.getElementById("input-amount").value = 0;
+	document.getElementById("withdrawal-amount").value = 0;
+	button.removeAttribute("disabled");
 });
